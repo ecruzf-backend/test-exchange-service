@@ -31,7 +31,7 @@ La API key de ExchangeRate-API se lee de `application.yaml` (`exchange-rate.api.
 ./mvnw clean verify             # Windows: mvnw.cmd clean verify
 ```
 
-Las pruebas **no usan internet**: el cliente Feign se simula en el borde HTTP.
+Las pruebas **no usan internet**: el cliente Feign se simula con Mockito.
 
 ## API
 
@@ -52,10 +52,10 @@ Las pruebas **no usan internet**: el cliente Feign se simula en el borde HTTP.
 ```json
 {
   "monto": 100,
-  "montoConvertido": 370.00,
+  "montoConvertido": 344.48,
   "monedaOrigen": "USD",
   "monedaDestino": "PEN",
-  "tipoCambio": 3.70
+  "tipoCambio": 3.4448
 }
 ```
 
@@ -63,10 +63,10 @@ Las pruebas **no usan internet**: el cliente Feign se simula en el borde HTTP.
 
 **Ejemplo con curl**
 
+En Windows (CMD):
+
 ```bash
-curl -X POST http://localhost:8080/api/conversion \
-  -H "Content-Type: application/json" \
-  -d '{"monto": 100, "monedaOrigen": "USD", "monedaDestino": "PEN"}'
+curl.exe -X POST http://localhost:8080/api/conversion -H "Content-Type: application/json" -d "{\"monto\": 100, \"monedaOrigen\": \"USD\", \"monedaDestino\": \"PEN\"}"
 ```
 
 ### Reglas de negocio
@@ -97,6 +97,7 @@ Todos los errores usan el formato estándar `application/problem+json` (RFC 9457
 | Moneda nula, con formato inválido o no soportada por el proveedor | 400 |
 | JSON mal formado, sin cuerpo o `monto` no numérico | 400 |
 | Método HTTP no permitido | 405 |
+| Content-Type no soportado (distinto de JSON) | 415 |
 | ExchangeRate-API caído, con timeout, sin cuota/credenciales o con respuesta inválida | 503 |
 | Error inesperado | 500 |
 
@@ -155,6 +156,7 @@ pe.test.exchange
 - **Timeouts explícitos** en el cliente Feign (3 s conexión, 5 s lectura) para que un proveedor lento no deje peticiones colgadas.
 - **Sin transacción alrededor de la llamada HTTP:** el caso de uso no es `@Transactional`; el guardado ya es atómico por sí mismo.
 - **`Clock` inyectado** en el servicio de dominio para poder probar la fecha de la operación.
+- - **Controller en la capa de aplicación:** se mantiene donde lo ubica la estructura del reto. Es un adaptador de entrada que depende de Spring; el dominio no lo conoce.
 - **Errores en un solo lugar:** `GlobalExceptionHandler` traduce excepciones a HTTP; el dominio no sabe nada de HTTP.
 
 ### Pruebas incluidas
