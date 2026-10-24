@@ -20,7 +20,7 @@ spring:
 exchange-rate:
   api:
     base-url: https://v6.exchangerate-api.com/v6
-    key: "*****"
+    key: 3635bb7bf1393d87c4dd5155
 
 
 #Abre http://localhost:8080/h2-console
